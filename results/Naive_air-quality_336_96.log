@@ -1,0 +1,6 @@
+Args in experiment:
+Namespace(batch_size=16, checkpoints='./checkpoints/', data='custom', data_path='air-quality.csv', des='Exp', embed='timeF', features='M', freq='h', is_training=1, itr=1, label_len=48, model='Naive', model_id='air-quality_336_96', num_workers=10, pred_len=96, root_path='/home/pawel/Desktop/ML/ml-project/datasets/', sample=1, seq_len=336, target='OT', train_only=False, use_gpu=False)
+Use CPU
+>>>>>>>testing : air-quality_336_96_Naive_custom_ftM_sl336_pl96_Exp<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+test 1776
+mse:1.7721588611602783, mae:0.6889773607254028, rse:1.1037380695343018, corr:[]
