@@ -1,12 +1,86 @@
 # Time-series Forecasting: Are (Cross-)Attentions Necessary?
 
-# Skład zespołu:
+# Authors
 
 * Paweł Gacek
 * Dawid Wołek
 
+# Datasets
+
+To evaluate the long-term forecasting capabilities of state-of-the-art models such as DLinear, PatchTST, CATS, and others, we conduct experiments on six diverse and under-explored real-world time series datasets. These datasets cover a range of domains, including renewable energy, financial markets, industrial sales, and household utility usage, presenting varied temporal dynamics, sampling resolutions, noise characteristics, and forecasting challenges. Using less commonly benchmarked datasets helps assess how well modern forecasting models generalize beyond standard public benchmarks.
+
+Below, we describe each dataset individually, outlining its source, key attributes, and the forecasting setup used in our experiments.
+
+## Air Pollution
+
+The air pollution dataset we use contains hourly measurements of air quality indicators, most notably PM2.5 concentration, which is a key metric for particulate pollution. This dataset comes from a Kaggle collection designed for forecasting tasks and captures real-world temporal dynamics in atmospheric pollution levels with 20,976 samples. It exhibits strong seasonal and diurnal patterns, and challenges models with noise, missing values, and varied autocorrelation structures common to environmental data. Because pollution levels respond to both local emissions and weather conditions, this dataset tests each model's ability to capture both short-term variability and long-term trends.
+
+**Source:** [Kaggle - LSTM Datasets Multivariate Univariate](https://www.kaggle.com/datasets/rupakroy/lstm-datasets-multivariate-univariate/data)
+
+## Wind Power Generation (Wind-Power-Consumption)
+
+The wind power generation dataset records power output measurements from wind turbines,  sampled at hourly intervals, comprising 43,800 samples. It provides a realistic example of energy time series where forecasting is critical for grid planning and renewable integration. This dataset is multivariate and contains different operational and environmental variables (e.g., wind speed) that drive power production. Long-term forecasting here is challenging due to the combination of natural variability in wind patterns and engineered system responses, making it an ideal benchmark for models designed to capture complex temporal dependencies.
+
+**Source:** [Kaggle - Wind Power Generation Data Forecasting](https://www.kaggle.com/datasets/mubashirrahim/wind-power-generation-data-forecasting)
+
+## Microsoft Stock
+
+The Microsoft stock dataset contains historical financial time series data for MSFT shares, including prices (open, high, low, close) and volume, with 9,083 samples. Unlike many benchmark finance datasets that focus on popular indices, this dataset allows evaluation of forecasting models in a noisy, volatile domain where patterns are subtle and influenced by market dynamics. Financial time series are typically non-stationary, with changing volatility, trends, and shocks, challenging models to generalize beyond short-term dependencies.
+
+**Source:** [Kaggle - Microsoft Stock Data](https://www.kaggle.com/datasets/varpit94/microsoft-stock-data)
+
+## Household Power Consumption (HPC)
+
+The Household Power Consumption dataset is a classic multivariate time series from the UCI Machine Learning Repository that records electrical usage and related variables for a single household. With measurements such as global active power, voltage, and sub-metering, sampled at a high (minute-level) frequency over multiple years, it provides a rich testbed for forecasting models capable of leveraging long sequences and intra-day patterns. The dataset contains 34,589 samples and its high resolution and real-world missing values make it a strong candidate for evaluating long-horizon forecasting performance.
+
+**Source:** [UCI Machine Learning Repository - Individual Household Electric Power Consumption](https://archive.ics.uci.edu/dataset/235/individual+household+electric+power+consumption)
+
+## QPS 
+
+The QPS dataset (from the Kaggle collection of multivariate time series forecasting datasets) includes several real-world examples curated for forecasting tasks across domains. In our study, we use the portion labeled QPS, which contains multiple signals with varying temporal correlations and comprises 30,240 samples, enabling assessment of how models handle multivariate interactions and cross-series dependencies. This dataset helps probe whether models can exploit inter-feature relationships effectively for long-term forecasting.
+
+**Source:** [Kaggle - Datasets for Multivariate Time Series Forecasting](https://www.kaggle.com/datasets/limpidcloud/datasets-for-multivariate-time-series-forecasting)
+
+## Sales (Pharma Sales)
+
+The pharmaceutical sales dataset contains hourly sales records for products, offering a fine-grained view of demand patterns over time with 50,532 samples. It combines regular seasonal effects (e.g., daily or weekly purchase cycles) with random fluctuations in sales volume, which is characteristic of many real retail time series. Because forecasting future sales accurately can have direct business impact (e.g., inventory planning), this dataset provides a practical setting for evaluating model performance in economic demand forecasting.
+
+**Source:** [Kaggle - Pharma Sales Data](https://www.kaggle.com/datasets/milanzdravkovic/pharma-sales-data?select=saleshourly.csv)
+
+
+# Models
+
+We evaluate a diverse set of time series forecasting models, ranging from simple statistical baselines to recent deep learning architectures specifically designed for long-term forecasting. This selection allows us to analyze model performance across different levels of complexity and inductive biases, and to better understand the trade-offs between simplicity, interpretability, and predictive accuracy.
+
+Our experiments include a naive baseline, which serves as a reference point for measuring the added value of more sophisticated approaches, as well as several state-of-the-art neural forecasting models that have demonstrated strong performance on long-horizon time series tasks. The chosen models represent different modeling paradigms, including decomposition-based methods, linear forecasting, convolutional architectures, and Transformer-based approaches. 
+
+Below, we briefly describe each model used in our study.
+
+## Naive Last Value (Repeat-C)
+The Naive Last Value baseline, also referred to as Closest Repeat (Repeat-C), is a simple forecasting method that predicts all future time steps by repeating the last observed value from the look-back window. Despite its simplicity, this baseline provides a strong reference point for evaluating long-term forecasting models.
+
+## Autoformer
+Autoformer is a Transformer-based model specifically designed for long-term time series forecasting. It introduces a series decomposition mechanism that explicitly separates the input sequence into trend and seasonal components, allowing the model to better capture long-term patterns. In addition, Autoformer replaces standard self-attention with an auto-correlation mechanism, which focuses on discovering periodic dependencies in the time series while reducing computational complexity.
+In our experiments, Autoformer is also used as a baseline for DLinear, as DLinear adopts the same decomposition strategy while replacing the nonlinear forecasting modules with simple linear projections.
+
+## FEDformer
+FEDformer extends Autoformer by performing time series modeling in the frequency domain, enabling more efficient and expressive long-term forecasting. It applies frequency-enhanced decomposition and leverages Fourier- or wavelet-based representations to capture global temporal patterns while reducing redundancy in the attention mechanism. By modeling dominant frequency components, FEDformer improves both computational efficiency and forecasting accuracy on long sequences. Similar to Autoformer, it builds upon series decomposition principles, making it a strong Transformer-based baseline for long-horizon forecasting.
+
+## N-HiTS
+
+N-HiTS (Neural Hierarchical Interpolation for Time Series Forecasting) is a deep learning architecture designed to address the challenges of long-horizon forecasting by processing information at multiple temporal scales. It evolves from the N-BEATS architecture, utilizing a hierarchical structure of neural blocks that decompose the signal into different frequencies. The model employs a multi-rate sampling technique to reduce the dimensionality of the input and a hierarchical interpolation mechanism to ensure that each block focuses on a specific scale—ranging from coarse long-term trends to fine-grained short-term fluctuations. This approach significantly reduces computational costs while mitigating the "volatility" often found in long-term point predictions, allowing N-HiTS to outperform many Transformer-based models in both accuracy and efficiency.
+
+## DLinear
+DLinear is a lightweight linear model for long-term time series forecasting that challenges the necessity of complex Transformer-based architectures. While many forecasting models rely on self-attention mechanisms to capture long-range dependencies, DLinear demonstrates that explicit temporal modeling via simple linear projections can be sufficient for long-horizon forecasting. It adopts the series decomposition framework introduced in Autoformer and FEDformer, separating the input into trend and seasonal components using a moving average filter. Each component is then processed by a one-layer linear model, and the results are summed to form the final prediction
+
+## CATS
+CATS (Cross-Attention-only Time Series transformer) is a streamlined architecture that rethinks the role of attention in forecasting by eliminating self-attention entirely. The model addresses "temporal information loss" caused by the permutation-invariant nature of self-attention, which can hinder the capture of precise temporal orders. Instead, CATS establishes future horizons as learnable queries and treats historical data as keys and values within a cross-attention-only framework. By leveraging parameter sharing across horizons and a unique query-adaptive masking technique, CATS significantly reduces memory usage and parameter counts while outperforming both complex Transformers and lightweight models like DLinear.
+
 # Results Summary
-| Dataset               | Metric | MSE (DLinear) | MAE (DLinear) | MSE (CATS) | MAE (CATS) | MSE (PatchTST) | MAE (PatchTST) | MSE (NHITS) | MAE (NHITS) | MSE (TFT) | MAE (TFT) | MSE (FEDformer) | MAE (FEDformer) | MSE (Autoformer) | MAE (Autoformer) | MSE (Naive) | MAE (Naive) |
+
+The following table presents a comprehensive comparative analysis of various long-term time series forecasting models across diverse real-world datasets. We evaluate performance using Mean Squared Error (MSE) and Mean Absolute Error (MAE) across four standard forecasting horizons: 96, 192, 336, and 720 time steps.
+
+| Dataset               | Metric | MSE (DLinear) | MAE (DLinear) | MSE (CATS) | MAE (CATS) | MSE (PatchTST) | MAE (PatchTST) | MSE (NHITS) | MAE (NHITS) | MSE (TFT) | MAE (TFT) | MSE (FEDformer) | MAE (FEDformer) | MSE (Autoformer) | MAE (Autoformer) | MSE (Naive  Last) | MAE (NaiveLast Value) |
 |-----------------------|--------|---------------|---------------|------------|------------|----------------|----------------|-------------|-------------|-----------|-----------|-----------------|-----------------|------------------|------------------|------------:|------------:|
 | Air Pollution         | 96     | 0.122         | 0.250         | 0.122      | 0.243      | 0.131          | 0.255          | 0.158       | 0.284       |           |           | 0.151           | 0.287           | 0.188            | 0.319            | 0.448       | 0.461       |
 |                       | 192    | 0.149         | 0.277         | 0.152      | 0.273      | 0.163          | 0.283          | 0.214       | 0.325       |           |           | 0.182           | 0.313           | 0.194            | 0.319            | 0.482       | 0.484       |
