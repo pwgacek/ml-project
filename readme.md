@@ -221,6 +221,24 @@ To print results for all six datasets, execute:
 !bash evaluate.sh
 ```
 
+## CATS
+
+Our CATS experiments use the official implementation from the authors' repository. Results are reproduced using the provided Jupyter notebook [`CATS.ipynb`](CATS.ipynb). The simplest and recommended way to run this is directly on Google Colab.
+
+### What the notebook does (step-by-step):
+
+1. Downloads CATS repository from GitHub
+2. Installs dependencies
+3. Runs experiments on each dataset across all prediction horizons (96, 192, 336, 720 steps)
+4. Saves and prints results
+
+To run CATS on all six datasets, execute in a notebook cell:
+
+```python
+!bash cats.sh
+```
+
+
 # References
 
 - Kim, D., Park, J., Lee, J., Kim, H. (2024). *Are Self-Attentions Effective for Time Series Forecasting?* NeurIPS 2024. https://arxiv.org/abs/2405.16877
