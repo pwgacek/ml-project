@@ -76,7 +76,7 @@ DLinear is a lightweight linear model for long-term time series forecasting that
 ## CATS
 CATS (Cross-Attention-only Time Series transformer) is a streamlined architecture that rethinks the role of attention in forecasting by eliminating self-attention entirely. The model addresses "temporal information loss" caused by the permutation-invariant nature of self-attention, which can hinder the capture of precise temporal orders. Instead, CATS establishes future horizons as learnable queries and treats historical data as keys and values within a cross-attention-only framework. By leveraging parameter sharing across horizons and a unique query-adaptive masking technique, CATS significantly reduces memory usage and parameter counts while outperforming both complex Transformers and lightweight models like DLinear.
 
-# Results Summary
+# Results
 
 The following table presents a comprehensive comparative analysis of various long-term time series forecasting models across diverse real-world datasets. We evaluate performance using Mean Squared Error (MSE) and Mean Absolute Error (MAE) across four standard forecasting horizons: 96, 192, 336, and 720 time steps.
 
@@ -110,3 +110,123 @@ The following table presents a comprehensive comparative analysis of various lon
 **Legend**
 - HPC - Household Power Consumption.
 - QPS - Queries Per Second - different sources of system loads.
+
+# Average Rank
+
+To compare model performance across different datasets and horizons, we calculate the average rank for each model. For each dataset-horizon combination, models are ranked by their MSE (rank 1 = best/lowest MSE). These ranks are then averaged to provide an overall performance indicator.
+
+## Average Rank per Horizon
+
+The following table shows the average rank for each model across all six datasets at each forecasting horizon:
+
+| Horizon | DLinear | CATS | PatchTST | NHITS | FEDformer | Autoformer | Naive |
+|---------|---------|------|----------|-------|-----------|------------|-------|
+| 96 | 3.17 | 1.17 | 3.50 | 4.33 | 3.83 | 5.83 | 6.17 |
+| 192 | 2.67 | 2.17 | 3.50 | 4.17 | 3.67 | 5.50 | 6.33 |
+| 336 | 2.33 | 2.67 | 4.00 | 4.00 | 3.67 | 5.00 | 6.33 |
+| 720 | 2.83 | 3.00 | 4.50 | 3.67 | 3.00 | 4.67 | 6.33 |
+
+## Overall Average Rank
+
+The overall average rank across all datasets and horizons:
+
+- **CATS**: 2.25
+- **DLinear**: 2.75
+- **FEDformer**: 3.54
+- **PatchTST**: 3.88
+- **NHITS**: 4.04
+- **Autoformer**: 5.25
+- **Naive**: 6.29
+
+CATS and DLinear demonstrate the best overall performance, with CATS showing particularly strong consistency at shorter horizons (96 and 192 steps). Notably, PatchTST (rank 3.88), despite claiming superior performance over DLinear in its original paper, ranks lower in our evaluation across these diverse datasets. NHITS (rank 4.04) also underperforms compared to FEDformer (rank 3.54), though it shows competitive performance at longer horizons, particularly on the QPS dataset. The Naive baseline, as expected, ranks last across all horizons.
+
+# Conclusion
+
+Our evaluation across six diverse real-world datasets provides a nuanced answer to the question: **Are (Cross-)Attentions Necessary?** While attention mechanisms can be beneficial, they are not strictly necessary for competitive long-term forecasting.
+
+The top two performers—CATS (rank 2.25) and DLinear (rank 2.75)—represent fundamentally different approaches. CATS demonstrates that a streamlined cross-attention-only design can be highly effective, while DLinear achieves competitive performance using no attention mechanisms whatsoever, relying instead on simple linear projections with series decomposition. This challenges the assumption that complex Transformer architectures are necessary for capturing long-range dependencies in time series.
+
+Notably, PatchTST's underperformance relative to its original paper claims, and NHITS ranking below FEDformer, suggest that architectural complexity does not consistently translate to better performance across diverse domains. Our results indicate that simpler models like DLinear often provide comparable results with significantly lower computational overhead, while CATS offers an efficient middle ground when attention is deemed beneficial.
+
+These findings emphasize the importance of evaluating models on diverse, under-explored datasets rather than relying solely on standard benchmarks, as no single architecture dominates universally across all forecasting scenarios.
+
+# How to reproduce?
+
+This section describes how to reproduce our results for each model.
+
+## DLinear
+
+Our DLinear experiments use the official implementation from the authors' `LTSF-Linear/` repository. Results are reproduced using the provided Jupyter notebook [`DLinear.ipynb`](DLinear.ipynb). The simplest and recommended way to run this is directly on Google Colab.
+
+### What the notebook does (step-by-step):
+
+1. Downloads LTSF-Linear repository from GitHub
+2. Installs dependencies (PyTorch, pandas, scikit-learn, etc.)
+3. Runs experiments on each dataset across all prediction horizons (96, 192, 336, 720 steps)
+4. Saves and prints results
+
+To run DLinear on all six datasets, execute:
+
+```python
+!bash dlinear.sh
+```
+
+To print results for all six datasets, execute:
+
+```python
+!bash show_metrics.sh ../results
+```
+
+## Naive, Autoformer, FEDformer
+
+These models are also implemented in the LTSF-Linear repository. Reproduction follows the same process as DLinear, but with different scripts:
+
+### Naive Baseline
+
+To run naive baseline on all six datasets, execute :
+
+```python
+!bash naive.sh
+```
+
+### Autoformer & FEDformer
+
+To run Autoformer and  FEDformer on all six datasets, execute :
+
+```python
+!bash transformers.sh
+```
+
+## N-HiTS
+
+Our N-HiTS experiments use the official implementation from the authors' repository. Results are reproduced using the provided Jupyter notebook [`N-HiTS.ipynb`](N-HiTS.ipynb). The simplest and recommended way to run this is directly on Google Colab.
+
+### What the notebook does (step-by-step):
+
+1. Downloads N-HiTS repository from GitHub
+2. Installs dependencies
+3. Transforms datasets into N-HiTS format using the provided transform utility
+4. Runs experiments on each dataset across all prediction horizons (96, 192, 336, 720 steps)
+5. Saves and prints results
+
+To run N-HiTS on all six datasets, execute in a notebook cell:
+
+```python
+!bash nhits.sh
+```
+
+To print results for all six datasets, execute:
+
+```python
+!bash evaluate.sh
+```
+
+# References
+
+- Kim, D., Park, J., Lee, J., Kim, H. (2024). *Are Self-Attentions Effective for Time Series Forecasting?* NeurIPS 2024. https://arxiv.org/abs/2405.16877
+- Zeng, A., Chen, M., Zhang, L., Xu, Q. (2022). *Are Transformers Effective for Time Series Forecasting?* NeurIPS 2022. https://arxiv.org/abs/2205.13504
+- Nie, Y., Nguyen, N. H., Sinthong, P., Kalagnanam, J. (2023). *A Time Series is Worth 64 Words: Long-term Forecasting with Transformers.* ICLR 2023. https://arxiv.org/abs/2211.14730
+- Wu, H., Xu, J., Wang, J., Long, M. (2021). *Autoformer: Decomposition Transformers with Auto-Correlation for Long-Term Series Forecasting.* NeurIPS 2021. https://arxiv.org/abs/2106.13008
+- Zhou, T., Ma, Z., Wen, Q., Wang, X., Sun, L., Jin, R. (2022). *FEDformer: Frequency Enhanced Decomposed Transformer for Long-term Series Forecasting.* ICML 2022. https://arxiv.org/abs/2201.12740
+- Challu, C., Olivares, K. G., Oreshkin, B. N., Garza, F., Mergenthaler-Canseco, M., Dubrawski, A. (2023). *N-HiTS: Neural Hierarchical Interpolation for Time Series Forecasting.* AAAI 2023. https://arxiv.org/abs/2201.12886
+
