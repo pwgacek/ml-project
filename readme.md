@@ -1,9 +1,26 @@
 # Time-series Forecasting: Are (Cross-)Attentions Necessary?
 
-# Authors
+## *Authors*
 
 * Paweł Gacek
 * Dawid Wołek
+
+
+# Introduction
+Time series forecasting is a fundamental problem in machine learning and statistics, with applications spanning finance, energy management, environmental monitoring, healthcare, and beyond. The goal is to predict future values of a sequence based on historical observations, capturing temporal dependencies, trends, seasonal patterns, and complex non-linear relationships within the data. As datasets grow larger and forecasting horizons extend further into the future, the challenge intensifies—requiring models that can generalize across diverse domains while remaining computationally efficient.
+
+## The Rise of Transformer-Based Approaches
+
+In recent years, Transformer architectures, originally designed for natural language processing, have been adapted to time series forecasting with considerable success. Models such as **Autoformer**, **FEDformer**, and **PatchTST** leverage self-attention mechanisms to capture long-range dependencies by computing relationships between all time steps in a sequence. These architectures often incorporate domain-specific modifications.
+
+The appeal of Transformers lies in their ability to model complex, non-local interactions in data. However, this expressiveness comes at a cost: increased computational overhead, larger memory footprints, and greater susceptibility to overfitting, particularly when training data is limited.
+
+## Challenging the Necessity of Attention: Simple Linear Models
+
+In contrast to the complexity of Transformers, **DLinear** presents a radically simpler alternative. DLinear avoids attention mechanisms entirely, instead employing a decomposition-based approach where the input time series is split into trend and seasonal components using a moving average filter. Each component is then processed by a single-layer linear model, and the results are summed to produce the final forecast. Because of its simplicity, DLinear has demonstrated surprisingly competitive performance on standard benchmarks, often matching or exceeding Transformer-based models while requiring orders of magnitude fewer parameters and less computation.
+
+This raises a provocative question: **Are attention mechanisms truly necessary for effective long-term time series forecasting?** DLinear's success suggests that explicit temporal modeling through linear projections, combined with principled decomposition, may be sufficient to capture the dependencies needed for accurate predictions.
+
 
 # Datasets
 
@@ -76,9 +93,67 @@ DLinear is a lightweight linear model for long-term time series forecasting that
 ## CATS
 CATS (Cross-Attention-only Time Series transformer) is a streamlined architecture that rethinks the role of attention in forecasting by eliminating self-attention entirely. The model addresses "temporal information loss" caused by the permutation-invariant nature of self-attention, which can hinder the capture of precise temporal orders. Instead, CATS establishes future horizons as learnable queries and treats historical data as keys and values within a cross-attention-only framework. By leveraging parameter sharing across horizons and a unique query-adaptive masking technique, CATS significantly reduces memory usage and parameter counts while outperforming both complex Transformers and lightweight models like DLinear.
 
+## PatchTST
+PatchTST is a novel time-series forecasting model that leverages patch-based attention mechanisms to capture temporal dependencies and improve prediction accuracy. It efficiently processes large datasets by dividing them into smaller patches, allowing for better handling of complex patterns and trends in time-series data.
+This approach not only enhances the model's ability to learn from diverse temporal patterns but also significantly reduces computational overhead. By focusing on localized patches, PatchTST can adaptively learn from varying time scales, making it particularly effective for datasets with irregular sampling rates. The model's architecture also allows for integration with other forecasting techniques.
+
+
+# Setup and Used Metrics
+
+## Experimental Environment
+
+To ensure reproducibility and consistency across all experiments, we conducted our evaluation using Google Colab with an NVIDIA Tesla T4 GPU as the primary computational environment. This cloud-based setup provides standardized hardware access and eliminates variability due to local system configurations.
+
+For each model, we utilized the official implementations provided by the original authors in their respective repositories. This approach maximizes reproducibility and ensures that our results reflect the models as intended by their creators, rather than introducing biases through custom reimplementations. Each model was run in its own environment with dependencies and configurations specified by the authors.
+
+## Training Configuration
+
+We adhered to the default hyperparameters and training procedures recommended in each model's original paper and codebase. This includes learning rates, batch sizes, number of training epochs, optimizer settings, and any model-specific design choices (e.g., number of layers, hidden dimensions, attention heads).
+
+## Forecasting Task Setup
+
+For all experiments, we performed multivariate-to-multivariate forecasting, meaning that the models take as input multiple variables from the historical window and predict multiple variables for the future horizon.
+
+We evaluated each model across four standard forecasting horizons:
+- **96 time steps**
+- **192 time steps**
+- **336 time steps**
+- **720 time steps**
+
+
+## Evaluation Metrics
+
+We use two widely adopted metrics for quantitative evaluation:
+
+### Mean Squared Error (MSE)
+
+MSE measures the average squared difference between predicted and actual values:
+
+$$
+\text{MSE} = \frac{1}{N} \sum_{i=1}^{N} (y_i - \hat{y}_i)^2
+$$
+
+where $y_i$ is the true value and $\hat{y}_i$ is the predicted value. MSE is sensitive to large errors, making it useful for identifying models that produce occasional large mispredictions.
+
+### Mean Absolute Error (MAE)
+
+MAE measures the average absolute difference between predicted and actual values:
+
+$$
+\text{MAE} = \frac{1}{N} \sum_{i=1}^{N} |y_i - \hat{y}_i|
+$$
+
+MAE is more robust to outliers than MSE and provides an interpretable measure of average prediction error in the same units as the original data.
+
+
+## Reproducibility
+
+All experiments are fully reproducible using the provided Jupyter notebooks and shell scripts included in this repository. Each model's setup, dataset preprocessing, training, and evaluation steps are documented in the **"How to reproduce?"** section of this README.
+
+
 # Results
 
-The following table presents a comprehensive comparative analysis of various long-term time series forecasting models across diverse real-world datasets. We evaluate performance using Mean Squared Error (MSE) and Mean Absolute Error (MAE) across four standard forecasting horizons: 96, 192, 336, and 720 time steps.
+The following table presents a comprehensive comparative analysis of various long-term time series forecasting models across diverse real-world datasets.
 
 | Dataset               | Metric | MSE (DLinear) | MAE (DLinear) | MSE (CATS) | MAE (CATS) | MSE (PatchTST) | MAE (PatchTST) | MSE (NHITS) | MAE (NHITS) | MSE (TFT) | MAE (TFT) | MSE (FEDformer) | MAE (FEDformer) | MSE (Autoformer) | MAE (Autoformer) | MSE (Naive  Last) | MAE (NaiveLast Value) |
 |-----------------------|--------|---------------|---------------|------------|------------|----------------|----------------|-------------|-------------|-----------|-----------|-----------------|-----------------|------------------|------------------|------------:|------------:|
@@ -238,6 +313,24 @@ To run CATS on all six datasets, execute in a notebook cell:
 !bash cats.sh
 ```
 
+## PatchTST
+
+Our PatchTST experiments use the implementation from the TSLib repository which contains official implementation. Results are reproduced using the provided Jupyter notebook [`PatchTST.ipynb`](PatchTST.ipynb). The recommended way to run this is directly on Google Colab.
+
+### What the notebook does (step-by-step):
+
+1. Set up proper python version
+2. Download TSLib repository from GitHub
+3. Install dependencies
+4. Run experiments on each dataset across all prediction horizons
+5. Save and prints results
+
+To run PatchTST on all six datasets, execute in a notebook cell:
+
+```python
+!bash patch_tst_runner.sh
+```
+
 
 # References
 
@@ -247,4 +340,4 @@ To run CATS on all six datasets, execute in a notebook cell:
 - Wu, H., Xu, J., Wang, J., Long, M. (2021). *Autoformer: Decomposition Transformers with Auto-Correlation for Long-Term Series Forecasting.* NeurIPS 2021. https://arxiv.org/abs/2106.13008
 - Zhou, T., Ma, Z., Wen, Q., Wang, X., Sun, L., Jin, R. (2022). *FEDformer: Frequency Enhanced Decomposed Transformer for Long-term Series Forecasting.* ICML 2022. https://arxiv.org/abs/2201.12740
 - Challu, C., Olivares, K. G., Oreshkin, B. N., Garza, F., Mergenthaler-Canseco, M., Dubrawski, A. (2023). *N-HiTS: Neural Hierarchical Interpolation for Time Series Forecasting.* AAAI 2023. https://arxiv.org/abs/2201.12886
-
+- Wang, Y., Wu, H., Dong, J., Liu, Y., Long, M., Wang, J. (2024). *Deep Time Series Models: A Comprehensive Survey and Benchmark.* arXiv preprint. https://arxiv.org/abs/2407.13278

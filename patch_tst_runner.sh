@@ -18,6 +18,9 @@ declare -a datasets=(
   "household_power:household_power_consumption_hourly_clean.csv:Voltage:h:7"
   "QPS:QPS_clean.csv:y9:t:10"
   "sales:sales_clean.csv:R06:h:8"
+  "air_pollution:air-pollution.csv:so2:h:8"
+  "ms_stock:microsoft-stock.csv:Close:d:6"
+  "wpg:wind-power-generation.csv:Power:h:9"
   # Add more datasets here as needed
 )
 
