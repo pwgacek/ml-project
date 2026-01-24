@@ -97,6 +97,11 @@ CATS (Cross-Attention-only Time Series transformer) is a streamlined architectur
 PatchTST is a novel time-series forecasting model that leverages patch-based attention mechanisms to capture temporal dependencies and improve prediction accuracy. It efficiently processes large datasets by dividing them into smaller patches, allowing for better handling of complex patterns and trends in time-series data.
 This approach not only enhances the model's ability to learn from diverse temporal patterns but also significantly reduces computational overhead. By focusing on localized patches, PatchTST can adaptively learn from varying time scales, making it particularly effective for datasets with irregular sampling rates. The model's architecture also allows for integration with other forecasting techniques.
 
+## Temporal Fusion Transformer (TFT)
+TFT combines sequence-to-sequence LSTMs with attention and gating to fuse static covariates, known future inputs, and observed history. It uses variable selection networks to pick useful signals per time step, a temporal attention module to focus on relevant horizons, and gating layers to skip components when they are not helpful, aiming for interpretability and flexible handling of mixed inputs.
+
+We briefly tested TFT onn few datasets and its MSE/MAE were several times worse than even the naive baseline, and training took hours. Because of the poor accuracy and prohibitive runtime, we stopped further experiments and did not include TFT in the reported results or ranking tables.
+
 
 # Setup and Used Metrics
 
