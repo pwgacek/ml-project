@@ -34,7 +34,7 @@ The air pollution dataset we use contains hourly measurements of air quality ind
 
 **Source:** [Kaggle - LSTM Datasets Multivariate Univariate](https://www.kaggle.com/datasets/rupakroy/lstm-datasets-multivariate-univariate/data)
 
-## Wind Power Generation (Wind-Power-Consumption)
+## Wind Power Generation
 
 The wind power generation dataset records power output measurements from wind turbines,  sampled at hourly intervals, comprising 43,800 samples. It provides a realistic example of energy time series where forecasting is critical for grid planning and renewable integration. This dataset is multivariate and contains different operational and environmental variables (e.g., wind speed) that drive power production. Long-term forecasting here is challenging due to the combination of natural variability in wind patterns and engineered system responses, making it an ideal benchmark for models designed to capture complex temporal dependencies.
 
